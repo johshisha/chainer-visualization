@@ -1,7 +1,6 @@
 import argparse
 import os
 import math
-import cupy
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -79,12 +78,12 @@ def visualize_layer_activations(model, im, layer_idx):
     """
 
     if model._device_id is not None and model._device_id >= 0:  # Using GPU
-        im = cupy.array(im)
+        im = cuda.cupy.array(im)
 
     activations = model.activations(Variable(im), layer_idx)
 
-    if isinstance(activations, cupy.ndarray):
-        activations = cupy.asnumpy(activations)
+    if not isinstance(activations, np.ndarray):
+        activations = cuda.cupy.asnumpy(activations)
 
     # Rescale to [0, 255]
     activations -= activations.min()
@@ -131,7 +130,7 @@ def main(args):
     image_filename = args.image_filename
 
     model = VGG()
-    serializers.load_hdf5(model_filename, model)
+    serializers.load_npz(model_filename, model)
 
     if gpu >= 0:
         cuda.get_device(gpu).use()
